@@ -1,18 +1,18 @@
 import {
-  CDPManager,
-  CDPUpdated,
-  CDPLiquidated,
+  TroveManager,
+  TroveUpdated,
+  TroveLiquidated,
   Liquidation,
   Redemption,
   BorrowerOperationsAddressChanged,
   StabilityPoolAddressChanged,
   PriceFeedAddressChanged
-} from "../../generated/CDPManager/CDPManager";
+} from "../../generated/TroveManager/TroveManager";
 import { BorrowerOperations, StabilityPool, PriceFeed } from "../../generated/templates";
 
 import { BIGINT_ZERO } from "../utils/bignumbers";
 
-import { getTroveOperationFromCDPManagerOperation } from "../types/TroveOperation";
+import { getTroveOperationFromTroveManagerOperation } from "../types/TroveOperation";
 
 import { finishCurrentLiquidation } from "../entities/Liquidation";
 import { finishCurrentRedemption } from "../entities/Redemption";
@@ -33,13 +33,13 @@ export function handlePriceFeedAddressChanged(event: PriceFeedAddressChanged): v
   PriceFeed.create(event.params._newPriceFeedAddress);
 }
 
-export function handleCDPUpdated(event: CDPUpdated): void {
-  let cdpManager = CDPManager.bind(event.address);
-  let snapshots = cdpManager.rewardSnapshots(event.params._borrower);
+export function handleTroveUpdated(event: TroveUpdated): void {
+  let troveManager = TroveManager.bind(event.address);
+  let snapshots = troveManager.rewardSnapshots(event.params._borrower);
 
   updateTrove(
     event,
-    getTroveOperationFromCDPManagerOperation(event.params._operation),
+    getTroveOperationFromTroveManagerOperation(event.params._operation),
     event.params._borrower,
     event.params._coll,
     event.params._debt,
@@ -49,7 +49,7 @@ export function handleCDPUpdated(event: CDPUpdated): void {
   );
 }
 
-export function handleCDPLiquidated(event: CDPLiquidated): void {
+export function handleTroveLiquidated(event: TroveLiquidated): void {
   updateTrove(
     event,
     "accrueRewards",
@@ -63,7 +63,7 @@ export function handleCDPLiquidated(event: CDPLiquidated): void {
 
   updateTrove(
     event,
-    getTroveOperationFromCDPManagerOperation(event.params._operation),
+    getTroveOperationFromTroveManagerOperation(event.params._operation),
     event.params._borrower,
     BIGINT_ZERO,
     BIGINT_ZERO,
@@ -74,24 +74,24 @@ export function handleCDPLiquidated(event: CDPLiquidated): void {
 }
 
 export function handleLiquidation(event: Liquidation): void {
-  let cdpManager = CDPManager.bind(event.address);
+  let troveManager = TroveManager.bind(event.address);
 
   finishCurrentLiquidation(
     event,
     event.params._liquidatedColl,
     event.params._liquidatedDebt,
     event.params._collGasCompensation,
-    event.params._CLVGasCompensation
+    event.params._LUSDGasCompensation
   );
 
-  updateTotalRedistributed(cdpManager.L_ETH(), cdpManager.L_CLVDebt());
+  updateTotalRedistributed(troveManager.L_ETH(), troveManager.L_LUSDDebt());
 }
 
 export function handleRedemption(event: Redemption): void {
   finishCurrentRedemption(
     event,
-    event.params._attemptedCLVAmount,
-    event.params._actualCLVAmount,
+    event.params._attemptedLUSDAmount,
+    event.params._actualLUSDAmount,
     event.params._ETHSent
   );
 }
