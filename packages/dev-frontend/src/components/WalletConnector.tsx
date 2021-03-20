@@ -4,6 +4,7 @@ import { AbstractConnector } from "@web3-react/abstract-connector";
 import { Button, Text, Flex, Link, Box } from "theme-ui";
 
 import { injectedConnector } from "../connectors/injectedConnector";
+import { walletConnectConnector } from "../connectors/walletConnectConnector";
 import { useAuthorizedConnection } from "../hooks/useAuthorizedConnection";
 
 import { RetryDialog } from "./RetryDialog";
@@ -117,7 +118,14 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ children, load
 
   return (
     <>
-      <Flex sx={{ height: "100vh", justifyContent: "center", alignItems: "center" }}>
+      <Flex
+        sx={{
+          height: "100vh",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
         <Button
           onClick={() => {
             dispatch({ type: "startActivating", connector: injectedConnector });
@@ -135,6 +143,16 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ children, load
               <Box sx={{ ml: 2 }}>Connect wallet</Box>
             </>
           )}
+        </Button>
+
+        <Button
+          sx={{ mt: 3 }}
+          onClick={() => {
+            dispatch({ type: "startActivating", connector: walletConnectConnector });
+            activate(walletConnectConnector);
+          }}
+        >
+          WalletConnect
         </Button>
       </Flex>
 
